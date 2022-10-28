@@ -1,4 +1,3 @@
 User-agent: *
 Disallow:
 Sitemap: https://www.amandarolia.github.io/sitemap.xml
-google-site-verification=6eTenVF5SX1ovzOyQQfYOK3koQIm7uOQimRtcdkOhyw
