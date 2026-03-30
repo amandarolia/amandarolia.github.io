@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS Preparation Tracker - PGT & Advanced</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --accent-advanced: #3b82f6;
+            --accent-pgt: #10b981;
+            --accent-both: #8b5cf6;
+            --accent-must: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(71, 85, 105, 0.5);
+        }
+
+        .topic-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid var(--border);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .topic-checkbox:checked {
+            background: var(--accent-advanced);
+            border-color: var(--accent-advanced);
+        }
+
+        .topic-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 0.875rem;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .topic-checkbox.pgt:checked {
+            background: var(--accent-pgt);
+            border-color: var(--accent-pgt);
+        }
+
+        .topic-checkbox.both:checked {
+            background: var(--accent-both);
+            border-color: var(--accent-both);
+        }
+
+        .topic-checkbox.must:checked {
+            background: var(--accent-must);
+            border-color: var(--accent-must);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--accent-advanced) 0%, var(--accent-pgt) 100%);
+            transition: width 0.5s ease;
+        }
+
+        .badge-advanced { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .badge-pgt { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-both { background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3); }
+        .badge-must { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .tab-active {
+            background: rgba(59, 130, 246, 0.2);
+            border-bottom: 2px solid #3b82f6;
+            color: #60a5fa;
+        }
+
+        .subject-header {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+        }
+
+        .priority-high { border-left: 3px solid #ef4444; }
+        .priority-medium { border-left: 3px solid #f59e0b; }
+        .priority-low { border-left: 3px solid #10b981; }
+
+        .must-do {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+        }
+
+        .milestone-complete {
+            animation: pulse-glow 2s infinite;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .warning-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+    </style>
+</head>
+<body class="text-slate-100">
+    <div class="container mx-auto p-4 max-w-7xl">
+        <!-- Header -->
+        <header class="glass-card rounded-2xl p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+                        CS Preparation Tracker
+                    </h1>
+                    <p class="text-slate-400 mt-1">PGT + Advanced CS Topics | Author: Aman Darolia</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="resetAll()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors text-sm font-medium">
+                        <i data-lucide="rotate-ccw" class="w-4 h-4 inline mr-2"></i>Reset
+                    </button>
+                    <button onclick="exportData()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-colors text-sm font-medium">
+                        <i data-lucide="download" class="w-4 h-4 inline mr-2"></i>Export
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition-colors text-sm font-medium">
+                        <i data-lucide="upload" class="w-4 h-4 inline mr-2"></i>Import
+                    </button>
+                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap gap-4 mt-4 pt-4 border-t border-slate-700">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                    <span class="text-sm text-slate-400">Advanced</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    <span class="text-sm text-slate-400">PGT Specific</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+                    <span class="text-sm text-slate-400">Common</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                    <span class="text-sm text-slate-400">Must Do 🔥</span>
+                </div>
+                <div class="flex items-center gap-2 ml-auto">
+                    <span class="px-2 py-1 rounded text-xs bg-red-500/20 text-red-400 border border-red-500/30">High Priority</span>
+                    <span class="px-2 py-1 rounded text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">Medium</span>
+                    <span class="px-2 py-1 rounded text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Low</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Must Do Warning -->
+        <div class="warning-box rounded-xl p-4 mb-6">
+            <div class="flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-6 h-6 text-red-400 flex-shrink-0"></i>
+                <div>
+                    <h3 class="font-semibold text-red-400 mb-1">🔥 Must Do Topics - Don't Skip!</h3>
+                    <p class="text-sm text-slate-300">
+                        Stack Operations | File Handling (Text/Binary/CSV) | SQL Queries | Python-MySQL Connectivity | 
+                        Network Devices & Cables | Flip-Flop Conversions | Output/Error Questions
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Total Topics</p>
+                        <p class="text-2xl font-bold font-mono" id="totalTopics">0</p>
+                    </div>
+                    <i data-lucide="book-open" class="w-8 h-8 text-slate-600"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Completed</p>
+                        <p class="text-2xl font-bold font-mono text-blue-400" id="completedCount">0</p>
+                    </div>
+                    <i data-lucide="check-circle" class="w-8 h-8 text-blue-600"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Must Do Done</p>
+                        <p class="text-2xl font-bold font-mono text-red-400" id="mustDoCount">0</p>
+                    </div>
+                    <i data-lucide="flame" class="w-8 h-8 text-red-600"></i>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm">Progress</p>
+                        <p class="text-2xl font-bold font-mono" id="progressPercent">0%</p>
+                    </div>
+                    <div class="w-16 h-16 rounded-full border-4 border-slate-700 relative">
+                        <svg class="w-full h-full transform -rotate-90">
+                            <circle cx="32" cy="32" r="28" fill="none" stroke="url(#gradient)" stroke-width="4"
+                                stroke-dasharray="175.9" stroke-dashoffset="175.9" id="progressCircle"
+                                stroke-linecap="round"/>
+                            <defs>
+                                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#3b82f6"/>
+                                    <stop offset="100%" stop-color="#10b981"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="glass-card rounded-xl p-2 mb-6 flex flex-wrap gap-2">
+            <button onclick="filterTopics('all')" id="filter-all" class="tab-active px-4 py-2 rounded-lg text-sm font-medium transition-all">
+                All Topics
+            </button>
+            <button onclick="filterTopics('must')" id="filter-must" class="px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all">
+                🔥 Must Do
+            </button>
+            <button onclick="filterTopics('both')" id="filter-both" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+                Common
+            </button>
+            <button onclick="filterTopics('advanced')" id="filter-advanced" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+                Advanced
+            </button>
+            <button onclick="filterTopics('pgt')" id="filter-pgt" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+                PGT Specific
+            </button>
+            <button onclick="filterTopics('high')" id="filter-high" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white transition-all">
+                High Priority
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <div id="subjectsContainer" class="space-y-6">
+            <!-- Content injected by JS -->
+        </div>
+
+        <!-- Milestones -->
+        <div class="glass-card rounded-xl p-6 mt-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <i data-lucide="trophy" class="w-5 h-5 text-amber-400"></i>
+                Milestones
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="milestonesContainer">
+                <!-- Milestones injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Complete Syllabus Data
+        const syllabusData = {
+            "Python Programming (Must Do 🔥)": {
+                topics: [
+                    { name: "Data Types & Operators", type: "must", priority: "high", desc: "int, float, string, bool. Arithmetic, relational, logical operators." },
+                    { name: "Strings - Slicing & Functions", type: "must", priority: "high", desc: "split(), partition(), slicing [:], indexing. upper(), lower(), find(), replace()" },
+                    { name: "Lists - Traversal & Operations", type: "must", priority: "high", desc: "max(), 2nd max, duplicates removal, sorting, list comprehension" },
+                    { name: "Stack - Push & Pop Operations", type: "must", priority: "high", desc: "🔥 CRITICAL: Stack using list, append(), pop(). Programs based on stack" },
+                    { name: "Dictionary - Update & Frequency", type: "must", priority: "high", desc: "update(), keys(), values(), frequency count using dict" },
+                    { name: "Functions - Arguments & Return", type: "must", priority: "high", desc: "def, return, positional, default, keyword arguments. Local vs Global variables" },
+                    { name: "Mutable vs Immutable", type: "must", priority: "high", desc: "list (mutable) vs tuple (immutable). Reference vs value" },
+                    { name: "Output & Error Questions", type: "must", priority: "high", desc: "💯 Global & local variable scope. Error tracing questions" },
+                    { name: "Built-in Functions", type: "pgt", priority: "high", desc: "len(), range(), type(), int(), str(), input(), print()" },
+                    { name: "Control Flow", type: "pgt", priority: "medium", desc: "if-else, for, while, break, continue, pass" },
+                    { name: "Tuple Operations", type: "pgt", priority: "medium", desc: "Immutable, packing, unpacking, count(), index()" },
+                    { name: "Set Operations", type: "pgt", priority: "medium", desc: "union, intersection, difference, add(), remove()" },
+                    { name: "List Comprehension", type: "advanced", priority: "medium", desc: "[x for x in range()], nested comprehensions" },
+                    { name: "Lambda & Map/Filter", type: "advanced", priority: "low", desc: "Anonymous functions, functional programming" },
+                    { name: "Recursion", type: "advanced", priority: "medium", desc: "Factorial, Fibonacci, recursive thinking" }
+                ]
+            },
+            "File Handling (Must Do 📂)": {
+                topics: [
+                    { name: "File Modes (r, w, a, r+, w+, a+)", type: "must", priority: "high", desc: "Read, write, append modes. Difference between them" },
+                    { name: "Text File - Count Lines/Words/Chars", type: "must", priority: "high", desc: "🔥 read(), readline(), readlines(). Loop through file" },
+                    { name: "Text File - Search Word", type: "must", priority: "high", desc: "Search specific word, condition-based reading" },
+                    { name: "Binary File - pickle module", type: "must", priority: "high", desc: "dump(), load(). Create, insert, search, update binary files" },
+                    { name: "CSV File Operations", type: "must", priority: "high", desc: "csv.reader(), csv.writer(). Create, read, search CSV" },
+                    { name: "File Methods", type: "pgt", priority: "high", desc: "flush(), tell(), seek(), close(). Concept and use" },
+                    { name: "with Statement", type: "pgt", priority: "medium", desc: "Context manager for file handling" },
+                    { name: "Text vs Binary vs CSV", type: "pgt", priority: "medium", desc: "Differences, when to use which" },
+                    { name: "File Pointer Operations", type: "advanced", priority: "low", desc: "seek(0), tell() for random access" }
+                ]
+            },
+            "SQL (Easy Marks 💻)": {
+                topics: [
+                    { name: "Basic Definitions", type: "must", priority: "high", desc: "Table, record, field, primary key, foreign key, candidate key" },
+                    { name: "Table Creation (CREATE TABLE)", type: "must", priority: "high", desc: "Data types: CHAR, VARCHAR, INT, FLOAT, DATE, DECIMAL" },
+                    { name: "SELECT with WHERE", type: "must", priority: "high", desc: "Filtering records, comparison operators" },
+                    { name: "LIKE Operator ('A%', '_a%')", type: "must", priority: "high", desc: "Pattern matching, wildcard characters" },
+                    { name: "AND, OR, BETWEEN", type: "must", priority: "high", desc: "Logical operators, range selection" },
+                    { name: "Aggregate Functions", type: "must", priority: "high", desc: "COUNT(*), SUM(), AVG(), MAX(), MIN()" },
+                    { name: "ORDER BY (ASC/DESC)", type: "must", priority: "high", desc: "Sorting results, multiple column sort" },
+                    { name: "UPDATE & DELETE", type: "must", priority: "high", desc: "Modifying and deleting records" },
+                    { name: "GROUP BY & HAVING", type: "both", priority: "high", desc: "Grouping data, filtering groups" },
+                    { name: "IN & NOT IN", type: "pgt", priority: "medium", desc: "Membership testing in SQL" },
+                    { name: "DISTINCT & ALL", type: "pgt", priority: "medium", desc: "Removing duplicates" },
+                    { name: "SQL Joins", type: "both", priority: "high", desc: "Equi-join, natural join, Cartesian product" },
+                    { name: "DDL Commands", type: "pgt", priority: "high", desc: "CREATE, DROP, ALTER, TRUNCATE" },
+                    { name: "Constraints", type: "pgt", priority: "medium", desc: "NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK" },
+                    { name: "Normalization", type: "advanced", priority: "medium", desc: "1NF, 2NF, 3NF, BCNF" },
+                    { name: "Relational Algebra", type: "advanced", priority: "medium", desc: "Select, project, union, set difference" }
+                ]
+            },
+            "Python-MySQL Connectivity (Must Do 🔗)": {
+                topics: [
+                    { name: "Connect → Cursor → Execute", type: "must", priority: "high", desc: "🔥 Steps: import mysql.connector, connect(), cursor(), execute()" },
+                    { name: "fetchone() & fetchall()", type: "must", priority: "high", desc: "Retrieving data from database" },
+                    { name: "Insert via Python", type: "must", priority: "high", desc: "INSERT query execution with parameters" },
+                    { name: "Update via Python", type: "must", priority: "high", desc: "UPDATE query execution" },
+                    { name: "Fill in Blanks Questions", type: "pgt", priority: "high", desc: "Simple definition and syntax questions" },
+                    { name: "rowcount Property", type: "pgt", priority: "medium", desc: "Number of affected rows" },
+                    { name: "commit() & rollback()", type: "advanced", priority: "medium", desc: "Transaction control" }
+                ]
+            },
+            "Networking (Must Do 🌐)": {
+                topics: [
+                    { name: "LAN vs WAN", type: "must", priority: "high", desc: "Differences, coverage, speed, ownership" },
+                    { name: "Network Topologies", type: "must", priority: "high", desc: "Star, Bus, Ring, Mesh. Cable layout drawing" },
+                    { name: "Network Devices", type: "must", priority: "high", desc: "🔥 Router, Switch, Hub, Bridge, Repeater, Gateway, Modem, NIC" },
+                    { name: "Cable Properties & Differences", type: "must", priority: "high", desc: "Twisted pair, Coaxial, Fiber optic. Speed, distance, cost" },
+                    { name: "Protocols (HTTP, FTP)", type: "must", priority: "high", desc: "HTTP, HTTPS, FTP, SMTP, POP3, TCP, IP" },
+                    { name: "Cable Layout Drawing", type: "must", priority: "high", desc: "Star topology diagram, bus topology diagram" },
+                    { name: "Full Forms", type: "pgt", priority: "high", desc: "LAN, WAN, MAN, PAN, NIC, MAC, IP, DNS, DHCP" },
+                    { name: "Types of Networks", type: "pgt", priority: "high", desc: "PAN, LAN, MAN, WAN characteristics" },
+                    { name: "Switching Techniques", type: "pgt", priority: "medium", desc: "Circuit, packet, message switching" },
+                    { name: "OSI Model", type: "advanced", priority: "medium", desc: "7 layers and their functions" },
+                    { name: "TCP/IP Model", type: "advanced", priority: "medium", desc: "4 layers, comparison with OSI" },
+                    { name: "IP Addressing & Subnetting", type: "advanced", priority: "high", desc: "IPv4 classes, subnet mask, CIDR" },
+                    { name: "Network Security Basics", type: "advanced", priority: "low", desc: "Firewall, encryption, digital signatures" }
+                ]
+            },
+            "Digital Logic (Flip-Flops Must Do)": {
+                topics: [
+                    { name: "Flip-Flop Conversions", type: "must", priority: "high", desc: "🔥 CRITICAL: SR to JK, JK to D, D to T conversions" },
+                    { name: "JK Flip-Flop", type: "must", priority: "high", desc: "Characteristic table, excitation table, race around" },
+                    { name: "SR Flip-Flop", type: "pgt", priority: "high", desc: "Set-Reset, invalid condition" },
+                    { name: "D Flip-Flop", type: "pgt", priority: "high", desc: "Delay flip-flop, data transfer" },
+                    { name: "T Flip-Flop", type: "pgt", priority: "high", desc: "Toggle flip-flop, frequency division" },
+                    { name: "Karnaugh Map", type: "both", priority: "high", desc: "SOP & POS minimization, don't care" },
+                    { name: "Boolean Algebra", type: "both", priority: "high", desc: "Laws, De Morgan's, simplification" },
+                    { name: "Logic Gates", type: "pgt", priority: "high", desc: "AND, OR, NOT, NAND, NOR, XOR, XNOR" },
+                    { name: "Number Systems", type: "pgt", priority: "high", desc: "Binary, Octal, Decimal, Hex conversions" },
+                    { name: "Combinational Circuits", type: "advanced", priority: "medium", desc: "MUX, DEMUX, Encoder, Decoder, Adders" },
+                    { name: "Sequential Circuits", type: "advanced", priority: "medium", desc: "Counters, Registers, State diagrams" },
+                    { name: "Registers & Counters", type: "advanced", priority: "medium", desc: "Shift registers, ripple counters" }
+                ]
+            },
+            "Data Structures": {
+                topics: [
+                    { name: "Arrays", type: "both", priority: "high", desc: "1D, 2D arrays. Operations, traversals" },
+                    { name: "Linked Lists", type: "advanced", priority: "high", desc: "Singly, doubly, circular. Insert, delete, traverse" },
+                    { name: "Queues", type: "both", priority: "medium", desc: "Linear, circular, priority queue" },
+                    { name: "Trees", type: "advanced", priority: "high", desc: "Binary tree, BST, traversals" },
+                    { name: "Binary Search Tree", type: "advanced", priority: "high", desc: "Search, insert, delete operations" },
+                    { name: "Graphs", type: "advanced", priority: "medium", desc: "BFS, DFS, adjacency matrix/list" },
+                    { name: "Hashing", type: "advanced", priority: "medium", desc: "Hash functions, collision resolution" },
+                    { name: "Heaps", type: "advanced", priority: "medium", desc: "Min/max heap, heap sort" }
+                ]
+            },
+            "Algorithms": {
+                topics: [
+                    { name: "Searching", type: "both", priority: "high", desc: "Linear search, binary search" },
+                    { name: "Sorting", type: "both", priority: "high", desc: "Bubble, selection, insertion, merge, quick" },
+                    { name: "Time Complexity", type: "advanced", priority: "high", desc: "Big-O notation, analysis" },
+                    { name: "Recursion", type: "advanced", priority: "medium", desc: "Tower of Hanoi, backtracking" },
+                    { name: "Graph Algorithms", type: "advanced", priority: "medium", desc: "Dijkstra, Prim, Kruskal" },
+                    { name: "Dynamic Programming", type: "advanced", priority: "medium", desc: "Knapsack, LCS problems" },
+                    { name: "Greedy Algorithms", type: "advanced", priority: "medium", desc: "Activity selection, Huffman coding" }
+                ]
+            },
+            "Operating Systems": {
+                topics: [
+                    { name: "CPU Scheduling", type: "advanced", priority: "high", desc: "FCFS, SJF, Round Robin, Priority" },
+                    { name: "Deadlock", type: "advanced", priority: "high", desc: "Banker's algorithm, resource allocation" },
+                    { name: "Process Synchronization", type: "advanced", priority: "high", desc: "Semaphores, mutex, critical section" },
+                    { name: "Memory Management", type: "advanced", priority: "high", desc: "Paging, segmentation, virtual memory" },
+                    { name: "Page Replacement", type: "advanced", priority: "medium", desc: "FIFO, LRU, Optimal" },
+                    { name: "Disk Scheduling", type: "pgt", priority: "medium", desc: "FCFS, SSTF, SCAN" },
+                    { name: "File Systems", type: "advanced", priority: "medium", desc: "Allocation methods, directory structure" },
+                    { name: "Process Concepts", type: "advanced", priority: "medium", desc: "PCB, states, context switch" }
+                ]
+            },
+            "DBMS Advanced": {
+                topics: [
+                    { name: "ER Model", type: "advanced", priority: "medium", desc: "Entities, relationships, cardinality" },
+                    { name: "Transactions", type: "advanced", priority: "medium", desc: "ACID properties, serializability" },
+                    { name: "Concurrency Control", type: "advanced", priority: "medium", desc: "Locking, timestamp ordering" },
+                    { name: "Indexing", type: "advanced", priority: "medium", desc: "B-tree, B+ tree indexing" },
+                    { name: "Query Optimization", type: "advanced", priority: "low", desc: "Query processing, optimization" }
+                ]
+            },
+            "Theory of Computation": {
+                topics: [
+                    { name: "DFA & NFA", type: "advanced", priority: "high", desc: "Design, conversion, minimization" },
+                    { name: "Regular Expressions", type: "advanced", priority: "high", desc: "RE to automata conversion" },
+                    { name: "Context Free Grammar", type: "advanced", priority: "medium", desc: "Derivation, parse trees, ambiguity" },
+                    { name: "Pushdown Automata", type: "advanced", priority: "medium", desc: "PDA for CFLs" },
+                    { name: "Turing Machines", type: "advanced", priority: "medium", desc: "TM basics, decidability" },
+                    { name: "Pumping Lemma", type: "advanced", priority: "medium", desc: "Proving non-regularity" }
+                ]
+            },
+            "Compiler Design": {
+                topics: [
+                    { name: "Lexical Analysis", type: "advanced", priority: "medium", desc: "Tokens, patterns, DFA" },
+                    { name: "Parsing", type: "advanced", priority: "high", desc: "Top-down, bottom-up parsing" },
+                    { name: "LL(1) Parser", type: "advanced", priority: "high", desc: "FIRST, FOLLOW, parsing table" },
+                    { name: "LR Parser", type: "advanced", priority: "high", desc: "SLR, CLR, LALR parsing" },
+                    { name: "Syntax Directed Translation", type: "advanced", priority: "medium", desc: "SDT, attributes" },
+                    { name: "Code Optimization", type: "advanced", priority: "low", desc: "Optimization techniques" }
+                ]
+            },
+            "Computer Architecture": {
+                topics: [
+                    { name: "Instruction Format", type: "advanced", priority: "high", desc: "Opcode, operands, addressing" },
+                    { name: "Addressing Modes", type: "advanced", priority: "high", desc: "Immediate, direct, indirect, indexed" },
+                    { name: "Pipelining", type: "advanced", priority: "high", desc: "Hazards, CPI calculation" },
+                    { name: "Cache Memory", type: "advanced", priority: "high", desc: "Mapping techniques, replacement" },
+                    { name: "I/O Organization", type: "advanced", priority: "medium", desc: "Interrupts, DMA" },
+                    { name: "ALU Design", type: "advanced", priority: "medium", desc: "Adders, multipliers" }
+                ]
+            },
+            "Web Development": {
+                topics: [
+                    { name: "HTML Basics", type: "pgt", priority: "medium", desc: "Tags, attributes, forms" },
+                    { name: "CSS Basics", type: "pgt", priority: "medium", desc: "Selectors, properties, box model" },
+                    { name: "JavaScript", type: "pgt", priority: "medium", desc: "DOM, events, functions" },
+                    { name: "Web Technologies", type: "pgt", priority: "medium", desc: "WWW, URL, HTTP, web servers" }
+                ]
+            },
+            "Emerging Technologies": {
+                topics: [
+                    { name: "Artificial Intelligence", type: "pgt", priority: "medium", desc: "AI basics, applications" },
+                    { name: "Machine Learning", type: "pgt", priority: "medium", desc: "Supervised, unsupervised learning" },
+                    { name: "Cloud Computing", type: "pgt", priority: "low", desc: "SaaS, IaaS, PaaS" },
+                    { name: "IoT", type: "pgt", priority: "low", desc: "Internet of Things basics" },
+                    { name: "Blockchain", type: "pgt", priority: "low", desc: "Distributed ledger basics" }
+                ]
+            },
+            "Pedagogy & GK": {
+                topics: [
+                    { name: "Educational Psychology", type: "pgt", priority: "medium", desc: "Learning theories, motivation" },
+                    { name: "Teaching Methods", type: "pgt", priority: "medium", desc: "Instructional strategies" },
+                    { name: "Haryana GK", type: "pgt", priority: "medium", desc: "History, culture, current affairs" },
+                    { name: "Logical Reasoning", type: "pgt", priority: "high", desc: "Verbal, non-verbal reasoning" },
+                    { name: "Numerical Ability", type: "pgt", priority: "high", desc: "Quantitative aptitude" }
+                ]
+            }
+        };
+
+        let currentFilter = 'all';
+        let completedTopics = JSON.parse(localStorage.getItem('csTrackerProgress') || '{}');
+
+        function init() {
+            renderSubjects();
+            updateStats();
+            renderMilestones();
+            lucide.createIcons();
+        }
+
+        function renderSubjects() {
+            const container = document.getElementById('subjectsContainer');
+            container.innerHTML = '';
+
+            Object.entries(syllabusData).forEach(([subject, data]) => {
+                const filteredTopics = data.topics.filter(t => {
+                    if (currentFilter === 'all') return true;
+                    if (currentFilter === 'must') return t.type === 'must';
+                    if (currentFilter === 'both') return t.type === 'both';
+                    if (currentFilter === 'advanced') return t.type === 'advanced';
+                    if (currentFilter === 'pgt') return t.type === 'pgt';
+                    if (currentFilter === 'high') return t.priority === 'high';
+                    return true;
+                });
+
+                if (filteredTopics.length === 0) return;
+
+                const subjectDiv = document.createElement('div');
+                subjectDiv.className = 'glass-card rounded-xl overflow-hidden';
+
+                // Check if this is a "Must Do" subject
+                const isMustDo = data.topics.some(t => t.type === 'must');
+                if (isMustDo) {
+                    subjectDiv.classList.add('must-do');
+                }
+
+                const subjectProgress = calculateSubjectProgress(filteredTopics, subject);
+
+                subjectDiv.innerHTML = `
+                    <div class="subject-header p-4 flex items-center justify-between cursor-pointer" onclick="toggleSubject('${subject}')">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="${isMustDo ? 'flame' : 'folder'}" class="w-5 h-5 ${isMustDo ? 'text-red-400' : 'text-blue-400'}"></i>
+                            <h2 class="text-lg font-semibold ${isMustDo ? 'text-red-400' : ''}">${subject}</h2>
+                            <span class="text-sm text-slate-400">(${filteredTopics.length} topics)</span>
+                            ${isMustDo ? '<span class="px-2 py-0.5 rounded text-xs bg-red-500/20 text-red-400 border border-red-500/30">MUST DO</span>' : ''}
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-32 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div class="h-full ${isMustDo ? 'bg-gradient-to-r from-red-500 to-orange-500' : 'bg-gradient-to-r from-blue-500 to-emerald-500'}" style="width: ${subjectProgress}%"></div>
+                            </div>
+                            <span class="text-sm font-mono w-12 text-right">${subjectProgress}%</span>
+                            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform" id="icon-${subject.replace(/[^a-zA-Z0-9]/g, '-')}"></i>
+                        </div>
+                    </div>
+                    <div id="content-${subject.replace(/[^a-zA-Z0-9]/g, '-')}" class="hidden">
+                        <div class="p-4 space-y-2">
+                            ${filteredTopics.map(topic => {
+                                const id = `${subject}-${topic.name}`.replace(/[^a-zA-Z0-9]/g, '-');
+                                const isChecked = completedTopics[id] || false;
+                                let badgeClass, checkboxClass;
+
+                                if (topic.type === 'must') {
+                                    badgeClass = 'badge-must';
+                                    checkboxClass = 'must';
+                                } else if (topic.type === 'both') {
+                                    badgeClass = 'badge-both';
+                                    checkboxClass = 'both';
+                                } else if (topic.type === 'advanced') {
+                                    badgeClass = 'badge-advanced';
+                                    checkboxClass = '';
+                                } else {
+                                    badgeClass = 'badge-pgt';
+                                    checkboxClass = 'pgt';
+                                }
+
+                                const priorityClass = topic.priority === 'high' ? 'priority-high' : topic.priority === 'medium' ? 'priority-medium' : 'priority-low';
+
+                                return `
+                                    <div class="flex items-center gap-3 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors ${priorityClass} has-tooltip group">
+                                        <input type="checkbox" 
+                                            id="${id}" 
+                                            class="topic-checkbox ${checkboxClass}" 
+                                            ${isChecked ? 'checked' : ''}
+                                            onchange="toggleTopic('${id}')">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-medium ${isChecked ? 'line-through text-slate-500' : ''}">${topic.name}</span>
+                                                <span class="px-2 py-0.5 rounded text-xs ${badgeClass}">${topic.type === 'must' ? 'MUST' : topic.type.toUpperCase()}</span>
+                                                ${topic.priority === 'high' ? '<i data-lucide="star" class="w-3 h-3 text-amber-400"></i>' : ''}
+                                            </div>
+                                            <p class="text-xs text-slate-400 mt-1">${topic.desc}</p>
+                                        </div>
+                                        <div class="tooltip absolute right-4 bg-slate-900 border border-slate-700 p-2 rounded-lg text-xs max-w-xs z-10 shadow-xl">
+                                            <strong>Priority:</strong> ${topic.priority}<br>
+                                            <strong>Type:</strong> ${topic.type}<br>
+                                            <strong>Focus:</strong> ${topic.desc}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(subjectDiv);
+            });
+
+            lucide.createIcons();
+        }
+
+        function calculateSubjectProgress(topics, subject) {
+            const total = topics.length;
+            const completed = topics.filter(t => {
+                const id = `${subject}-${t.name}`.replace(/[^a-zA-Z0-9]/g, '-');
+                return completedTopics[id];
+            }).length;
+            return total === 0 ? 0 : Math.round((completed / total) * 100);
+        }
+
+        function toggleSubject(subject) {
+            const safeId = subject.replace(/[^a-zA-Z0-9]/g, '-');
+            const content = document.getElementById(`content-${safeId}`);
+            const icon = document.getElementById(`icon-${safeId}`);
+
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function toggleTopic(id) {
+            const checkbox = document.getElementById(id);
+            completedTopics[id] = checkbox.checked;
+            localStorage.setItem('csTrackerProgress', JSON.stringify(completedTopics));
+
+            const text = checkbox.nextElementSibling.querySelector('span:first-child');
+            if (checkbox.checked) {
+                text.classList.add('line-through', 'text-slate-500');
+            } else {
+                text.classList.remove('line-through', 'text-slate-500');
+            }
+
+            updateStats();
+            renderMilestones();
+
+            const progress = parseInt(document.getElementById('progressPercent').textContent);
+            if ([25, 50, 75, 100].includes(progress)) {
+                celebrateMilestone(progress);
+            }
+        }
+
+        function updateStats() {
+            let total = 0, completed = 0, mustDo = 0, mustDoCompleted = 0;
+
+            Object.entries(syllabusData).forEach(([subject, data]) => {
+                data.topics.forEach(topic => {
+                    total++;
+                    const id = `${subject}-${topic.name}`.replace(/[^a-zA-Z0-9]/g, '-');
+                    if (completedTopics[id]) {
+                        completed++;
+                        if (topic.type === 'must') mustDoCompleted++;
+                    }
+                    if (topic.type === 'must') mustDo++;
+                });
+            });
+
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            document.getElementById('totalTopics').textContent = total;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('mustDoCount').textContent = `${mustDoCompleted}/${mustDo}`;
+            document.getElementById('progressPercent').textContent = `${percent}%`;
+
+            const circle = document.getElementById('progressCircle');
+            const circumference = 175.9;
+            const offset = circumference - (percent / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function renderMilestones() {
+            const milestones = [
+                { percent: 25, label: 'Starter', icon: 'rocket' },
+                { percent: 50, label: 'Halfway', icon: 'target' },
+                { percent: 75, label: 'Pro', icon: 'zap' },
+                { percent: 100, label: 'Master', icon: 'crown' }
+            ];
+
+            const currentPercent = parseInt(document.getElementById('progressPercent').textContent);
+            const container = document.getElementById('milestonesContainer');
+
+            container.innerHTML = milestones.map(m => {
+                const achieved = currentPercent >= m.percent;
+                return `
+                    <div class="flex items-center gap-3 p-3 rounded-lg ${achieved ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30' : 'bg-slate-800/50 border border-slate-700'}">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center ${achieved ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-slate-500'}">
+                            <i data-lucide="${m.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="font-semibold ${achieved ? 'text-amber-400' : 'text-slate-500'}">${m.label}</p>
+                            <p class="text-xs text-slate-400">${m.percent}% Complete</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        function celebrateMilestone(percent) {
+            const badge = document.querySelector(`#milestonesContainer .bg-gradient-to-r`);
+            if (badge) {
+                badge.classList.add('milestone-complete');
+                setTimeout(() => badge.classList.remove('milestone-complete'), 2000);
+            }
+        }
+
+        function filterTopics(type) {
+            currentFilter = type;
+
+            const allFilters = ['all', 'must', 'both', 'advanced', 'pgt', 'high'];
+            allFilters.forEach(t => {
+                const btn = document.getElementById(`filter-${t}`);
+                if (t === type) {
+                    btn.classList.add('tab-active');
+                    btn.classList.remove('text-slate-400', 'text-red-400');
+                } else {
+                    btn.classList.remove('tab-active');
+                    if (t === 'must') {
+                        btn.classList.add('text-red-400');
+                    } else {
+                        btn.classList.add('text-slate-400');
+                    }
+                }
+            });
+
+            renderSubjects();
+        }
+
+        function resetAll() {
+            if (!confirm('Are you sure you want to reset all progress?')) return;
+            completedTopics = {};
+            localStorage.removeItem('csTrackerProgress');
+            renderSubjects();
+            updateStats();
+            renderMilestones();
+        }
+
+        function exportData() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                progress: completedTopics,
+                stats: {
+                    total: document.getElementById('totalTopics').textContent,
+                    completed: document.getElementById('completedCount').textContent,
+                    percent: document.getElementById('progressPercent').textContent
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `CS_Tracker_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    completedTopics = data.progress || {};
+                    localStorage.setItem('csTrackerProgress', JSON.stringify(completedTopics));
+                    renderSubjects();
+                    updateStats();
+                    renderMilestones();
+                    alert('✅ Progress imported successfully!');
+                } catch {
+                    alert('❌ Invalid file format');
+                }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
